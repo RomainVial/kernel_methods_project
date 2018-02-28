@@ -8,9 +8,9 @@ from dataset import Dataset
 from kernels import compute_kernel_matrix
 
 
-params = {0: {'spectrum_size': 5},
-          1: {'spectrum_size': 4},
-          2: {'spectrum_size': 4}}
+params = {0: {'spectrum_size': 5, 'feature_extractor': 'mismatch'},
+          1: {'spectrum_size': 4, 'feature_extractor': 'mismatch'},
+          2: {'spectrum_size': 3, 'feature_extractor': 'mismatch'}}
 preds = {0: [], 1: [], 2: []}
 
 for dataset_id in [0, 1, 2]:
@@ -28,7 +28,7 @@ for dataset_id in [0, 1, 2]:
                                   / len(dataset.dataset['val']['labels']))
 
     spectrum_size = params[dataset_id]['spectrum_size']
-    feature_extractor = 'mismatch'
+    feature_extractor = params[dataset_id]['feature_extractor']
     normalization = True
 
     print "Computing Kernels..."
