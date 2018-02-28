@@ -32,6 +32,8 @@ for dataset_id in [0, 1, 2]:
     normalization = True
 
     print "Computing Kernels..."
+    if not os.path.exists('./cache/'):
+        os.makedirs('./cache/')
     K_train_path = './cache/K_train_dataset_%s.npy' % dataset_id
     K_val_path = './cache/K_val_dataset_%s.npy' % dataset_id
     K_test_path = './cache/K_test_dataset_%s.npy' % dataset_id
@@ -55,7 +57,7 @@ for dataset_id in [0, 1, 2]:
         np.save(K_test_path, K_test)
 
     svc = SVC(kernel='precomputed', C=10.)
-    my_svm = MySVM(C=10., dual=False, verbose=True)
+    my_svm = MySVM(C=10., dual=True, verbose=True)
 
     print "Fitting sklearn model..."
     start = time.time()

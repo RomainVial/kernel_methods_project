@@ -15,7 +15,11 @@ def cvxopt_solve_qp(P, q, G=None, h=None, A=None, b=None):
         args.extend([matrix(G), matrix(h)])
         if A is not None:
             args.extend([matrix(A), matrix(b)])
-    sol = cvxopt.solvers.qp(*args, kktsolver='ldl', options={'kktreg': 1e-9})
+    try:
+        sol = cvxopt.solvers.qp(*args)
+    except ValueError as e:
+        print "Warning: Some constraints are redundant. %s" % e.message
+        sol = cvxopt.solvers.qp(*args, kktsolver='ldl', options={'kktreg': 1e-9})
     if 'optimal' not in sol['status']:
         return None
     return np.array(sol['x']).reshape((P.shape[1],))
@@ -27,6 +31,17 @@ class MySVM:
         self.dual = dual
         self.alpha = None
         self.verbose = verbose
+
+    def solve_dual_svm(self, K, y):
+        n = K.shape[0]
+        P = 2. * K
+        q = - 2. * y.reshape((n, 1))
+
+        # computing G
+        G = np.vstack([-np.diag(y), np.diag(y)]).astype(float)
+
+        h = np.vstack([np.zeros((n, 1)), self.C * np.ones((n, 1))])
+        return cvxopt_solve_qp(P=P, q=q, G=G, h=h)
 
     def solve_primal_svm(self, K, y):
         """
@@ -46,6 +61,7 @@ class MySVM:
         P = 2. * lambda_ * np.vstack([temp, np.zeros((n, 2 * n))])
 
         q = 1. / n * np.vstack([np.zeros((n, 1)), np.ones((n, 1))])
+
         # computing G
         temp1 = np.hstack([- y.reshape((n, 1)) * K, - np.identity(n)])
         temp2 = np.hstack([np.zeros((n, n)), - np.identity(n)])
@@ -64,7 +80,7 @@ class MySVM:
         if not self.dual:
             self.alpha, _ = np.split(self.solve_primal_svm(K, y_copy), 2)
         else:
-            self.alpha = None
+            self.alpha = self.solve_dual_svm(K, y_copy)
 
     def predict(self, K_val):
         y_pred = np.zeros((K_val.shape[0],))
