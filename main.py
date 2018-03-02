@@ -3,14 +3,13 @@ import time
 import utils
 import numpy as np
 from svm import MySVM
-from sklearn.svm import SVC
 from dataset import Dataset
 from kernels import compute_kernel_matrix
 
 
-params = {0: {'spectrum_size': 5, 'feature_extractor': 'mismatch'},
-          1: {'spectrum_size': 4, 'feature_extractor': 'mismatch'},
-          2: {'spectrum_size': 3, 'feature_extractor': 'mismatch'}}
+params = {0: {'spectrum_size': 5, 'feature_extractor': 'spectrum', 'kernel': 'rbf', 'C': 1.},
+          1: {'spectrum_size': 6, 'feature_extractor': 'spectrum', 'kernel': 'rbf', 'C': 10.},
+          2: {'spectrum_size': 5, 'feature_extractor': 'spectrum', 'kernel': 'rbf', 'C': 10.}}
 preds = {0: [], 1: [], 2: []}
 
 for dataset_id in [0, 1, 2]:
@@ -29,6 +28,7 @@ for dataset_id in [0, 1, 2]:
 
     spectrum_size = params[dataset_id]['spectrum_size']
     feature_extractor = params[dataset_id]['feature_extractor']
+    kernel = params[dataset_id]['kernel']
     normalization = True
 
     print "Computing Kernels..."
@@ -45,35 +45,29 @@ for dataset_id in [0, 1, 2]:
     else:
         K_train = compute_kernel_matrix(dataset.dataset['train']['sequences'],
                                         spectrum_size=spectrum_size,
-                                        feature_extractor=feature_extractor, normalization=normalization)
+                                        feature_extractor=feature_extractor, kernel=kernel,
+                                        normalization=normalization)
         K_val = compute_kernel_matrix(dataset.dataset['val']['sequences'], dataset.dataset['train']['sequences'],
                                       spectrum_size=spectrum_size,
-                                      feature_extractor=feature_extractor, normalization=normalization)
+                                      feature_extractor=feature_extractor, kernel=kernel,
+                                      normalization=normalization)
         K_test = compute_kernel_matrix(dataset.dataset['test']['sequences'], dataset.dataset['train']['sequences'],
                                        spectrum_size=spectrum_size,
-                                       feature_extractor=feature_extractor, normalization=normalization)
+                                       feature_extractor=feature_extractor, kernel=kernel,
+                                       normalization=normalization)
         np.save(K_train_path, K_train)
         np.save(K_val_path, K_val)
         np.save(K_test_path, K_test)
 
-    svc = SVC(kernel='precomputed', C=10.)
-    my_svm = MySVM(C=10., dual=True, verbose=True)
+    C = params[dataset_id]['C']
+    my_svm = MySVM(C=C, dual=True, verbose=True)
 
-    print "Fitting sklearn model..."
-    start = time.time()
-    svc.fit(K_train, dataset.dataset['train']['labels'])
-    print "Fitting took %.3f seconds" % (time.time() - start)
-
-    print "Fitting our model..."
+    print "Fitting svm model..."
     start = time.time()
     my_svm.fit(K_train, dataset.dataset['train']['labels'])
     print "Fitting took %.3f seconds" % (time.time() - start)
 
-    print "Scoring with sklearn model:"
-    print svc.score(K_train, dataset.dataset['train']['labels'])
-    print svc.score(K_val, dataset.dataset['val']['labels'])
-
-    print "Scoring with our model:"
+    print "Scoring:"
     print my_svm.score(K_train, dataset.dataset['train']['labels'])
     print my_svm.score(K_val, dataset.dataset['val']['labels'])
 
