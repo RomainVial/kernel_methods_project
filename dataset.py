@@ -1,5 +1,4 @@
 import csv
-import copy
 import numpy as np
 
 
@@ -56,4 +55,3 @@ if __name__ == "__main__":
                       ['data/Xte0_mat50.csv'])
 
     print np.bincount(dataset.dataset['train']['labels']).astype(float) / len(dataset.dataset['train']['labels'])
-    print np.bincount(dataset.dataset['val']['labels']).astype(float) / len(dataset.dataset['val']['labels'])
