@@ -31,6 +31,8 @@ class MySVM:
         self.dual = dual
         self.alpha = None
         self.verbose = verbose
+        if not self.verbose:
+            cvxopt.solvers.options['show_progress'] = False
 
     def solve_dual_svm(self, K, y):
         n = K.shape[0]
