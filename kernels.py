@@ -63,7 +63,10 @@ def linear_kernel(features1, features2=None, **kwargs):
 
 def rbf_kernel(features1, features2=None, **kwargs):
     if 'gamma' in kwargs:
-        gamma = kwargs['gamma']
+        if kwargs['gamma'] is None:
+            gamma = 1. / features1.shape[1]
+        else:
+            gamma = kwargs['gamma']
     else:
         gamma = 1. / features1.shape[1]
 
