@@ -5,7 +5,7 @@ import numpy as np
 
 class Dataset:
     def __init__(self, train_sequence_files, train_feature_files, train_label_files,
-                 test_sequence_files, test_feature_file, val_ratio=0.2):
+                 test_sequence_files, test_feature_file):
         self.dataset = {
             'train': {'sequences': [], 'labels': [], 'basic_features': []},
             'val': {'sequences': [], 'labels': [], 'basic_features': []},
@@ -27,8 +27,6 @@ class Dataset:
         for file_path in test_feature_file:
             self._read_X_mat_csv(file_path, 'test')
 
-        self._compute_val_split(val_ratio)
-
     def _read_X_csv(self, csv_path, split):
         with open(csv_path) as csv_file:
             reader = csv.reader(csv_file)
@@ -48,21 +46,6 @@ class Dataset:
             reader.next()
             for row in reader:
                 self.dataset[split]['labels'].append(int(row[1]))
-
-    def _compute_val_split(self, val_ratio):
-        np.random.seed(777)
-        split_copy = copy.copy(self.dataset['train'])
-        nb_sequences = len(split_copy['sequences'])
-
-        val_indexes = np.random.choice(nb_sequences, int(val_ratio * nb_sequences), replace=False)
-        self.dataset['val']['sequences'] = [split_copy['sequences'][idx] for idx in val_indexes]
-        self.dataset['val']['basic_features'] = [split_copy['basic_features'][idx] for idx in val_indexes]
-        self.dataset['val']['labels'] = [split_copy['labels'][idx] for idx in val_indexes]
-
-        train_indexes = np.delete(np.arange(nb_sequences), val_indexes)
-        self.dataset['train']['sequences'] = [split_copy['sequences'][idx] for idx in train_indexes]
-        self.dataset['train']['basic_features'] = [split_copy['basic_features'][idx] for idx in train_indexes]
-        self.dataset['train']['labels'] = [split_copy['labels'][idx] for idx in train_indexes]
 
 
 if __name__ == "__main__":
