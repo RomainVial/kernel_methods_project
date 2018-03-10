@@ -2,6 +2,8 @@ import cvxopt
 from cvxopt.base import matrix
 import numpy as np
 
+import utils
+
 
 def cvxopt_solve_qp(P, q, G=None, h=None, A=None, b=None):
     """
@@ -99,12 +101,5 @@ class MySVM:
         :param y_true: true labels
         :return: Accuracy score
         """
-        score = 0
         y_pred = self.predict(K_val)
-        n = len(y_true)
-        assert n == y_pred.shape[0], "Something is wrong, y_true and y_pred have different lengths"
-        for i in xrange(n):
-            if y_pred[i] == y_true[i]:
-                score += 1
-
-        return score / float(n)
+        return utils.accuracy(y_pred, y_true)

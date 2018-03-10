@@ -1,4 +1,6 @@
 import csv
+from copy import deepcopy
+
 import numpy as np
 
 
@@ -19,6 +21,7 @@ def cross_val(clf, K, Y, k=5):
     nb_train = nb_samples - fold_size
     nb_val = fold_size
     scores = np.zeros((k,))
+    models = []
     for i in range(k):
         idx_val = [j for j in range(i * fold_size, (i+1) * fold_size)]
         idx_train = [j for j in (range(i * fold_size) + range((i+1) * fold_size, nb_samples))]
@@ -31,5 +34,17 @@ def cross_val(clf, K, Y, k=5):
 
         clf.fit(K_train, Y_train)
         scores[i] = clf.score(K_val, Y_val)
+        models.append(deepcopy(clf))
         print 'Fold {}: {}'.format(i, scores[i])
-    return scores
+    return scores, models
+
+
+def accuracy(y_pred, y_true):
+    score = 0
+    n = len(y_true)
+    assert n == y_pred.shape[0], "y_true and y_pred have different lengths"
+    for i in xrange(n):
+        if y_pred[i] == y_true[i]:
+            score += 1
+
+    return score / float(n)
