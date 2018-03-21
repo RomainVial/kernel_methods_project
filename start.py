@@ -59,9 +59,9 @@ for dataset_id in [0, 1, 2]:
     my_svm.fit(K_train, dataset.dataset['train']['labels'])
     print "Fitting took %.3f seconds" % (time.time() - start)
 
-    print "Scoring:"
-    print my_svm.score(K_train, dataset.dataset['train']['labels'])
+    print "Scoring: {}\n".format(my_svm.score(K_train, dataset.dataset['train']['labels']))
 
     preds[dataset_id] = my_svm.predict(K_test)
 
-utils.to_csv(preds, 'cache/predictions.csv')
+utils.to_csv(preds, './cache/predictions.csv')
+print "Prediction file saved at {}".format('./cache/predictions.csv')
